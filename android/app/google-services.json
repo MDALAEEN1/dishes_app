@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "148040051452",
+    "project_id": "calaoriscount",
+    "storage_bucket": "calaoriscount.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:148040051452:android:ea4dba938fa8b6a09b8579",
+        "android_client_info": {
+          "package_name": "com.example.calaroiscount"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDlHSwZ0jr7mPPcZqM-LC7h5AnttSRHf34"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
