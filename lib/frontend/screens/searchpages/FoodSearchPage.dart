@@ -11,17 +11,15 @@ class RecipePage extends StatefulWidget {
 
 class _RecipePageState extends State<RecipePage> {
   final TextEditingController _budgetController = TextEditingController();
-  final TextEditingController _searchController =
-      TextEditingController(); // 🔹 حقل البحث عن اسم المنتج
+  final TextEditingController _searchController = TextEditingController();
   List<dynamic> recipes = [];
   bool isLoading = false;
 
-  static const String apiKey = "8c90976c3e6842bf94d40ae283573ece";
+  static const String apiKey = "53698879a4694c238c8b1dd0a51e1238";
   static const String baseUrl = "https://api.spoonacular.com/recipes/";
 
   String selectedCuisine = "all";
-
-  int offset = 0; // 🔹 قم بتعريف offset كمتغير في الكلاس
+  int offset = 0;
 
   Future<void> fetchRecipes(double budget, String query) async {
     setState(() {
@@ -65,10 +63,10 @@ class _RecipePageState extends State<RecipePage> {
         });
 
         if (filteredRecipes.isEmpty) {
-          offset += 10; // زيادة الـ offset
-          fetchRecipes(budget, query); // إعادة المحاولة
+          offset += 10;
+          fetchRecipes(budget, query);
         } else {
-          offset += 10; // زيادة الـ offset للطلب القادم
+          offset += 10;
         }
       } else {
         throw Exception("Failed to load recipes.");
@@ -96,8 +94,7 @@ class _RecipePageState extends State<RecipePage> {
         return {
           'title': data['title'],
           'image': data['image'],
-          'pricePerServing': (data['pricePerServing'] ?? 0) /
-              100.0, // ✅ تحويل السعر إلى الدولار
+          'pricePerServing': (data['pricePerServing'] ?? 0) / 100.0,
           'extendedIngredients': data['extendedIngredients'] ?? [],
           'nutrition': data['nutrition'] ?? {},
           'instructions': data['instructions'] ?? "No instructions available."
@@ -121,7 +118,7 @@ class _RecipePageState extends State<RecipePage> {
       body: SafeArea(
         child: Column(
           children: [
-            // 🔹 مربع البحث
+            // Search and Budget Input
             Container(
               decoration: BoxDecoration(
                 color: kapp,
@@ -137,8 +134,7 @@ class _RecipePageState extends State<RecipePage> {
                     children: [
                       Expanded(
                         child: TextField(
-                          controller:
-                              _searchController, // 🔹 حقل البحث عن اسم المنتج
+                          controller: _searchController,
                           decoration: InputDecoration(
                             labelText: "Search by Recipe Name",
                             border: OutlineInputBorder(
@@ -167,7 +163,6 @@ class _RecipePageState extends State<RecipePage> {
                     ],
                   ),
                   SizedBox(height: 10),
-                  SizedBox(width: 10),
                   ElevatedButton(
                     onPressed: () {
                       double? budget = double.tryParse(_budgetController.text);
@@ -177,8 +172,7 @@ class _RecipePageState extends State<RecipePage> {
                               content: Text("Please enter a valid budget.")),
                         );
                       } else {
-                        fetchRecipes(budget,
-                            _searchController.text); // 🔹 تمرير نص البحث
+                        fetchRecipes(budget, _searchController.text);
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -193,7 +187,7 @@ class _RecipePageState extends State<RecipePage> {
               ),
             ),
 
-            // 🔹 عرض الوصفات
+            // Recipe List
             Expanded(
               child: isLoading
                   ? Center(child: CircularProgressIndicator())
@@ -222,9 +216,7 @@ class _RecipePageState extends State<RecipePage> {
                                     builder: (context) => MealDetailPage(
                                       title: recipe['title'] ?? "No Title",
                                       image: recipe['image'] ?? "",
-                                      price: recipe['pricePerServing'] != null
-                                          ? "\$${recipe['pricePerServing'].toStringAsFixed(2)}"
-                                          : "N/A",
+                                      price: price,
                                       nutrition: {
                                         "Carbohydrates": recipe['nutrition']
                                                 ?['nutrients']?[0]?['amount'] ??
@@ -260,8 +252,16 @@ class _RecipePageState extends State<RecipePage> {
                                         borderRadius: BorderRadius.vertical(
                                             top: Radius.circular(10)),
                                         child: recipe['image'] != null
-                                            ? Image.network(recipe['image'],
-                                                fit: BoxFit.cover)
+                                            ? Image.network(
+                                                recipe['image'],
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (context, error,
+                                                    stackTrace) {
+                                                  return Icon(Icons.fastfood,
+                                                      size: 50,
+                                                      color: Colors.grey);
+                                                },
+                                              )
                                             : Icon(Icons.fastfood,
                                                 size: 50, color: Colors.grey),
                                       ),
@@ -291,7 +291,6 @@ class _RecipePageState extends State<RecipePage> {
                           },
                         ),
             ),
-            SizedBox(height: 20),
           ],
         ),
       ),

@@ -1,7 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:calaroiscount/frontend/widgets/const.dart';
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 class MealDetailPage extends StatelessWidget {
   final String title;
@@ -42,11 +43,17 @@ class MealDetailPage extends StatelessWidget {
               pinned: true,
               floating: false,
               flexibleSpace: FlexibleSpaceBar(
-                background: Image.network(
-                  image,
+                background: CachedNetworkImage(
+                  imageUrl: image,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const Icon(Icons.food_bank, size: 100),
+                  placeholder: (context, url) => Image.asset(
+                    "assets/images/carbohydrate.png",
+                    fit: BoxFit.cover,
+                  ),
+                  errorWidget: (context, url, error) => Image.asset(
+                    "assets/images/carbohydrate.png",
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
@@ -65,7 +72,7 @@ class MealDetailPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // العنوان
+                // Title
                 Text(
                   title,
                   style: const TextStyle(
@@ -75,43 +82,55 @@ class MealDetailPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
 
-                // السعر
+                // Price
                 Text(
                   "Price: $price",
                   style: const TextStyle(color: Colors.green, fontSize: 17),
                 ),
                 const SizedBox(height: 16),
 
-                // القيم الغذائية
+                // Nutrition Values
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildNutritionItem(
-                        "Carbs",
-                        nutrition["Carbohydrates"] ?? "N/A",
-                        "assets/images/carbohydrate.png"),
-                    _buildNutritionItem(
-                        "Protein",
-                        nutrition["Protein"] ?? "N/A",
-                        "assets/images/food.png"),
-                    _buildNutritionItem("Fat", nutrition["Fat"] ?? "N/A",
-                        "assets/images/pizza-slice.png"),
-                    _buildNutritionItem(
-                        "Calories",
-                        nutrition["calories"] ?? "N/A",
-                        "assets/images/calories.png"),
+                    NutritionItem(
+                      label: "Carbs",
+                      value: nutrition["Carbohydrates"] ?? "N/A",
+                      icon: "assets/images/carbohydrate.png",
+                    ),
+                    NutritionItem(
+                      label: "Protein",
+                      value: nutrition["Protein"] ?? "N/A",
+                      icon: "assets/images/food.png",
+                    ),
+                    NutritionItem(
+                      label: "Fat",
+                      value: nutrition["Fat"] ?? "N/A",
+                      icon: "assets/images/pizza-slice.png",
+                    ),
+                    NutritionItem(
+                      label: "Calories",
+                      value: nutrition["calories"] ?? "N/A",
+                      icon: "assets/images/calories.png",
+                    ),
                   ],
                 ),
 
                 const SizedBox(height: 20),
 
-                // المكونات
+                // Ingredients
                 const Text(
                   "Ingredients",
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
-                ...ingredients.map((item) => Padding(
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: ingredients.length,
+                  itemBuilder: (context, index) {
+                    final item = ingredients[index];
+                    return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: Row(
                         children: [
@@ -127,10 +146,12 @@ class MealDetailPage extends StatelessWidget {
                           ),
                         ],
                       ),
-                    )),
+                    );
+                  },
+                ),
                 const SizedBox(height: 20),
 
-                // طريقة التحضير
+                // Instructions
                 const Text(
                   "Preparation",
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -151,29 +172,10 @@ class MealDetailPage extends StatelessWidget {
     );
   }
 
-  // عنصر القيم الغذائية
-  Widget _buildNutritionItem(String label, dynamic value, String icon) {
-    return Column(
-      children: [
-        Image.asset(icon, width: 24, height: 24), // عرض الأيقونة
-        const SizedBox(height: 4),
-        Text(
-          "$value",
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        Text(
-          label,
-          style: TextStyle(color: Colors.grey[600], fontSize: 14),
-        ),
-      ],
-    );
-  }
-
-  // حفظ القيم الغذائية إلى Firebase
+  // Save Nutrition Data to Firebase
   Future<void> _saveNutritionToFirebase(BuildContext context) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      // عرض رسالة إذا لم يكن المستخدم مسجلاً الدخول
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("You must be logged in to save nutrition data!"),
@@ -191,18 +193,58 @@ class MealDetailPage extends StatelessWidget {
       "timestamp": FieldValue.serverTimestamp(),
     };
 
-    await FirebaseFirestore.instance
-        .collection("users")
-        .doc(user.uid)
-        .collection("nutrition_history")
-        .add(nutritionData);
+    try {
+      await FirebaseFirestore.instance
+          .collection("users")
+          .doc(user.uid)
+          .collection("nutrition_history")
+          .add(nutritionData);
 
-    // عرض رسالة تأكيد
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Nutrition data saved successfully!"),
-        backgroundColor: Colors.green,
-      ),
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Nutrition data saved successfully!"),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Failed to save nutrition data: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+}
+
+// Reusable Nutrition Item Widget
+class NutritionItem extends StatelessWidget {
+  final String label;
+  final dynamic value;
+  final String icon;
+
+  const NutritionItem({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Image.asset(icon, width: 24, height: 24),
+        const SizedBox(height: 4),
+        Text(
+          "$value",
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        Text(
+          label,
+          style: TextStyle(color: Colors.grey[600], fontSize: 14),
+        ),
+      ],
     );
   }
 }
