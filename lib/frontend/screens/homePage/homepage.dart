@@ -146,8 +146,7 @@ class FoodAppHome extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => MealDetailPage(
                         title: recipeDetails["title"] ?? "No Title",
-                        image: recipeDetails["image"] ??
-                            "https://via.placeholder.com/150",
+                        image: recipeDetails["image"] ?? "",
                         price: recipeDetails["price"] ?? "0.00",
                         nutrition: {
                           "Protein": recipeDetails["protein"] ?? 0,
@@ -177,8 +176,7 @@ class FoodAppHome extends StatelessWidget {
                             topRight: Radius.circular(15),
                           ),
                           child: Image.network(
-                            recipe["image"] ??
-                                "https://via.placeholder.com/150",
+                            recipe["image"] ?? "",
                             fit: BoxFit.cover,
                           ),
                         ),

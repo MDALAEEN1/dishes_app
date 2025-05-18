@@ -10,17 +10,23 @@ class RecipePage extends StatefulWidget {
 }
 
 class _RecipePageState extends State<RecipePage> {
+  // عناصر التحكم لإدخال الميزانية والبحث
   final TextEditingController _budgetController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
+
+  // قائمة الوصفات وحالة التحميل
   List<dynamic> recipes = [];
   bool isLoading = false;
 
-  static const String apiKey = "53698879a4694c238c8b1dd0a51e1238";
+  // مفاتيح API وثوابت URL
+  static const String apiKey = "d158d3191c3c43ceb843a9f8a5c8ec02";
   static const String baseUrl = "https://api.spoonacular.com/recipes/";
 
+  // متغيرات إضافية لتحديد المطبخ والإزاحة
   String selectedCuisine = "all";
   int offset = 0;
 
+  // دالة لجلب الوصفات بناءً على الميزانية والبحث
   Future<void> fetchRecipes(double budget, String query) async {
     setState(() {
       isLoading = true;
@@ -42,6 +48,7 @@ class _RecipePageState extends State<RecipePage> {
         List<dynamic> filteredRecipes = [];
 
         for (var recipe in results) {
+          // جلب تفاصيل الوصفة لكل عنصر
           final details = await getRecipeDetails(recipe['id']);
 
           double price = details['pricePerServing'] != null
@@ -62,7 +69,8 @@ class _RecipePageState extends State<RecipePage> {
           isLoading = false;
         });
 
-        if (filteredRecipes.isEmpty) {
+        // تعديل: التحقق من وجود نتائج قبل استدعاء fetchRecipes مرة أخرى
+        if (filteredRecipes.isEmpty && results.isNotEmpty) {
           offset += 10;
           fetchRecipes(budget, query);
         } else {
@@ -72,6 +80,7 @@ class _RecipePageState extends State<RecipePage> {
         throw Exception("Failed to load recipes.");
       }
     } catch (e) {
+      // معالجة الأخطاء وعرض رسالة للمستخدم
       print("Error: $e");
       setState(() {
         isLoading = false;
@@ -82,6 +91,7 @@ class _RecipePageState extends State<RecipePage> {
     }
   }
 
+  // دالة لجلب تفاصيل وصفة معينة
   Future<Map<String, dynamic>> getRecipeDetails(int recipeId) async {
     final detailsUrl = Uri.parse(
         "$baseUrl$recipeId/information?includeNutrition=true&apiKey=$apiKey");
@@ -92,8 +102,8 @@ class _RecipePageState extends State<RecipePage> {
         final data = json.decode(response.body);
 
         return {
-          'title': data['title'],
-          'image': data['image'],
+          'title': data['title'] ?? "No Title",
+          'image': data['image'] ?? "",
           'pricePerServing': (data['pricePerServing'] ?? 0) / 100.0,
           'extendedIngredients': data['extendedIngredients'] ?? [],
           'nutrition': data['nutrition'] ?? {},
@@ -103,6 +113,7 @@ class _RecipePageState extends State<RecipePage> {
         throw Exception("Failed to load recipe details.");
       }
     } catch (e) {
+      // معالجة الأخطاء أثناء جلب التفاصيل
       print("❌ Error fetching recipe details: $e");
       return {};
     }
@@ -112,13 +123,13 @@ class _RecipePageState extends State<RecipePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: kapp,
+        backgroundColor: kapp, // لون شريط التطبيق
       ),
-      backgroundColor: Color(0xFFF5F5F5),
+      backgroundColor: Color(0xFFF5F5F5), // لون خلفية الشاشة
       body: SafeArea(
         child: Column(
           children: [
-            // Search and Budget Input
+            // قسم إدخال البحث والميزانية
             Container(
               decoration: BoxDecoration(
                 color: kapp,
@@ -132,6 +143,7 @@ class _RecipePageState extends State<RecipePage> {
                 children: [
                   Row(
                     children: [
+                      // حقل إدخال البحث
                       Expanded(
                         child: TextField(
                           controller: _searchController,
@@ -146,6 +158,7 @@ class _RecipePageState extends State<RecipePage> {
                         ),
                       ),
                       SizedBox(width: 10),
+                      // حقل إدخال الميزانية
                       Expanded(
                         child: TextField(
                           controller: _budgetController,
@@ -163,8 +176,10 @@ class _RecipePageState extends State<RecipePage> {
                     ],
                   ),
                   SizedBox(height: 10),
+                  // زر البحث
                   ElevatedButton(
                     onPressed: () {
+                      // التحقق من صحة الميزانية قبل البحث
                       double? budget = double.tryParse(_budgetController.text);
                       if (budget == null || budget <= 0) {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -187,12 +202,14 @@ class _RecipePageState extends State<RecipePage> {
               ),
             ),
 
-            // Recipe List
+            // عرض قائمة الوصفات
             Expanded(
               child: isLoading
-                  ? Center(child: CircularProgressIndicator())
+                  ? Center(child: CircularProgressIndicator()) // مؤشر تحميل
                   : recipes.isEmpty
-                      ? Center(child: Text("No recipes found within budget."))
+                      ? Center(
+                          child: Text(
+                              "No recipes found within budget.")) // تعديل: تحسين النص
                       : GridView.builder(
                           gridDelegate:
                               SliverGridDelegateWithFixedCrossAxisCount(
@@ -210,6 +227,7 @@ class _RecipePageState extends State<RecipePage> {
 
                             return GestureDetector(
                               onTap: () {
+                                // الانتقال إلى صفحة تفاصيل الوصفة
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -247,6 +265,7 @@ class _RecipePageState extends State<RecipePage> {
                                   crossAxisAlignment:
                                       CrossAxisAlignment.stretch,
                                   children: [
+                                    // عرض صورة الوصفة
                                     Expanded(
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.vertical(
@@ -266,6 +285,7 @@ class _RecipePageState extends State<RecipePage> {
                                                 size: 50, color: Colors.grey),
                                       ),
                                     ),
+                                    // عرض عنوان الوصفة والسعر
                                     Padding(
                                       padding: EdgeInsets.all(8.0),
                                       child: Column(

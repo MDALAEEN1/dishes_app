@@ -14,6 +14,14 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
+  DateTime selectedDate = DateTime.now(); // Default date
+
+  void updateSelectedDate(DateTime newDate) {
+    setState(() {
+      selectedDate = newDate;
+    });
+  }
+
   Stream<QuerySnapshot<Map<String, dynamic>>> getAllNutritionData() {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -27,16 +35,22 @@ class _HomepageState extends State<Homepage> {
     return const Stream.empty();
   }
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> getAllTakenValuesData() {
+  Stream<QuerySnapshot<Map<String, dynamic>>> getAllTakenValuesData(
+      DateTime date) {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
+      String formattedDate =
+          "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} ";
+      debugPrint("Fetching data for date: '$formattedDate'");
       return FirebaseFirestore.instance
           .collection("users")
           .doc(user.uid)
           .collection("nutrition_history")
-          .orderBy("timestamp", descending: true)
+          .where("timestamp",
+              isEqualTo: formattedDate) // Match with trailing space
           .snapshots();
     }
+    debugPrint("No user is logged in. Returning empty stream.");
     return const Stream.empty();
   }
 
@@ -89,7 +103,7 @@ class _HomepageState extends State<Homepage> {
           }
 
           return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-            stream: getAllTakenValuesData(),
+            stream: getAllTakenValuesData(selectedDate),
             builder: (context, takenSnapshot) {
               if (takenSnapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
@@ -100,21 +114,19 @@ class _HomepageState extends State<Homepage> {
                     child: Text("حدث خطأ في تحميل بيانات القيم المأخوذة"));
               }
 
-              if (!takenSnapshot.hasData || takenSnapshot.data!.docs.isEmpty) {
-                return const Center(
-                    child: Text("لا توجد بيانات للقيم المأخوذة"));
-              }
-
               // جمع القيم المأخوذة
               double totalTakenProtein = 0.0;
               double totalTakenFats = 0.0;
               double totalTakenCarbs = 0.0;
 
-              for (var doc in takenSnapshot.data!.docs) {
-                var takenData = doc.data();
-                totalTakenProtein += parseDouble(takenData['Protein']);
-                totalTakenFats += parseDouble(takenData['Fat']);
-                totalTakenCarbs += parseDouble(takenData['Carbohydrates']);
+              if (takenSnapshot.hasData &&
+                  takenSnapshot.data!.docs.isNotEmpty) {
+                for (var doc in takenSnapshot.data!.docs) {
+                  var takenData = doc.data();
+                  totalTakenProtein += parseDouble(takenData['Protein']);
+                  totalTakenFats += parseDouble(takenData['Fat']);
+                  totalTakenCarbs += parseDouble(takenData['Carbohydrates']);
+                }
               }
 
               return SingleChildScrollView(
@@ -132,7 +144,14 @@ class _HomepageState extends State<Homepage> {
                       use_carbs: totalTakenCarbs,
                     ),
                     SizedBox(height: screenHeight * 0.03),
-                    const WeeklyCalendar(),
+                    WeeklyCalendar(
+                      selectedDay: selectedDate, // Pass the selected date
+                      onDateSelected: (DateTime newDate) {
+                        setState(() {
+                          selectedDate = newDate; // Update selected date
+                        });
+                      },
+                    ),
                   ],
                 ),
               );

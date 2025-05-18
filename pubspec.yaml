@@ -23,8 +23,13 @@ dependencies:
   curved_navigation_bar: ^1.0.6
   url_launcher: ^6.3.1
   cached_network_image: ^3.4.1
+  intl: ^0.20.2
+  flutter_launcher_icons: ^0.14.3
   
-
+flutter_launcher_icons:
+  android: true
+  image_path: "android/app/src/main/res/"
+              
 dev_dependencies:
   flutter_test:
     sdk: flutter

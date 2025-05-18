@@ -10,7 +10,7 @@ class FoodSearchPage extends StatefulWidget {
 
 class _FoodSearchPageState extends State<FoodSearchPage> {
   final String apiKey =
-      '53698879a4694c238c8b1dd0a51e1238'; // استبدل بمفتاح API الخاص بك
+      'd158d3191c3c43ceb843a9f8a5c8ec02'; // استبدل بمفتاح API الخاص بك
   List<dynamic> searchResults = [];
   TextEditingController searchController = TextEditingController();
 

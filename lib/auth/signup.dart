@@ -224,8 +224,7 @@ class _SignupState extends State<Signup> {
                           Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(
-                                builder: (context) =>
-                                    const CustomeNavigationBar()),
+                                builder: (context) => const LoginPage()),
                             (Route<dynamic> route) => false,
                           );
                         },

@@ -2,16 +2,28 @@ import 'package:calaroiscount/frontend/widgets/const.dart';
 import 'package:flutter/material.dart';
 
 class WeeklyCalendar extends StatefulWidget {
-  const WeeklyCalendar({super.key});
+  final Function(DateTime) onDateSelected; // Callback for date selection
+  final DateTime selectedDay; // اليوم المحدد يتم تمريره من الويدجت الأب
+
+  const WeeklyCalendar({
+    Key? key,
+    required this.onDateSelected,
+    required this.selectedDay, // إضافة selectedDay كمعامل
+  }) : super(key: key);
 
   @override
   _WeeklyCalendarState createState() => _WeeklyCalendarState();
 }
 
 class _WeeklyCalendarState extends State<WeeklyCalendar> {
-  // لتحديد بداية الأسبوع الحالي (يبدأ من يوم الاثنين)
-  DateTime startOfWeek =
-      DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1));
+  late DateTime startOfWeek;
+
+  @override
+  void initState() {
+    super.initState();
+    startOfWeek =
+        DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,48 +88,55 @@ class _WeeklyCalendarState extends State<WeeklyCalendar> {
               itemBuilder: (context, index) {
                 final DateTime dayOfWeek =
                     startOfWeek.add(Duration(days: index));
-                final bool isToday = _isSameDay(today, dayOfWeek);
+                final bool isSelected =
+                    _isSameDay(widget.selectedDay, dayOfWeek);
 
-                return AnimatedContainer(
-                  duration: Duration(milliseconds: 300),
-                  width: screenWidth * 0.12,
-                  margin: EdgeInsets.symmetric(horizontal: 5),
-                  decoration: BoxDecoration(
-                    color: isToday ? kapp : Color(0xFFF5F5F5),
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: isToday
-                        ? [
-                            BoxShadow(
-                                color: Colors.orange.shade300, blurRadius: 8)
-                          ]
-                        : [],
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        daysOfWeek[index],
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: isToday ? Colors.white : Colors.black,
-                          fontWeight: FontWeight.bold,
+                return GestureDetector(
+                  onTap: () {
+                    widget.onDateSelected(dayOfWeek); // Call the callback
+                  },
+                  child: AnimatedContainer(
+                    duration: Duration(milliseconds: 300),
+                    width: screenWidth * 0.12,
+                    margin: EdgeInsets.symmetric(horizontal: 5),
+                    decoration: BoxDecoration(
+                      color: isSelected ? Colors.blue : Color(0xFFF5F5F5),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                  color: Colors.orange.shade300, blurRadius: 8)
+                            ]
+                          : [],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          daysOfWeek[index],
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: isSelected ? Colors.white : Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        '${dayOfWeek.day}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: isToday ? Colors.white : Colors.black,
+                        SizedBox(height: 4),
+                        Text(
+                          '${dayOfWeek.day}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: isSelected ? Colors.white : Colors.black,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
               },
             ),
           ),
+          SizedBox(height: 20),
         ],
       ),
     );

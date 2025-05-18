@@ -3,6 +3,7 @@ import 'package:calaroiscount/frontend/widgets/const.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class MealDetailPage extends StatelessWidget {
   final String title;
@@ -190,7 +191,7 @@ class MealDetailPage extends StatelessWidget {
       "Protein": nutrition["Protein"] ?? "N/A",
       "Fat": nutrition["Fat"] ?? "N/A",
       "Calories": nutrition["calories"] ?? "N/A",
-      "timestamp": FieldValue.serverTimestamp(),
+      "timestamp": DateFormat('yyyy-MM-dd ').format(DateTime.now()),
     };
 
     try {
