@@ -3,9 +3,7 @@ import 'package:calaroiscount/auth/user_info_page.dart';
 import 'package:calaroiscount/firebase_options.dart';
 import 'package:calaroiscount/frontend/screens/account/helppage.dart';
 import 'package:calaroiscount/frontend/screens/account/notificationspage.dart';
-import 'package:calaroiscount/frontend/screens/account/privacypage.dart';
 import 'package:calaroiscount/frontend/screens/account/profilepage.dart';
-
 import 'package:calaroiscount/frontend/screens/splash/welcomepage.dart';
 import 'package:calaroiscount/frontend/widgets/bottompar.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -35,7 +33,6 @@ class MyApp extends StatelessWidget {
         routes: {
           '/Profile-page': (context) => ProfilePage(),
           '/Notifications-page': (context) => NotificationsPage(),
-          '/Privacy-page': (context) => PrivacyPage(),
           '/Help-page': (context) => HelpPage(),
           '/login-page': (context) => LoginPage(),
         });

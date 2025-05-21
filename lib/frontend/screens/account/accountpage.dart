@@ -129,18 +129,7 @@ class _AccountPageState extends State<AccountPage> {
               );
             },
           ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.security),
-            title: const Text("Privacy & Security"),
-            subtitle: const Text("Adjust your privacy settings"),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () {
-              Navigator.of(context).pushNamed(
-                '/Privacy-page',
-              );
-            },
-          ),
+
           const Divider(),
           ListTile(
             leading: const Icon(Icons.help),
